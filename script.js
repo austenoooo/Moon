@@ -75,11 +75,11 @@ function init() {
 
   createMoon();
 
-  // loadOceanModel();
-  loadBoatModel();
+  loadOceanModel();
+  // loadBoatModel();
 
   // TODO: think about when to put loop so that it is only ran when all models are loaded
-  loop();
+  // loop();
 }
 
 function loadCubeMap() {
@@ -128,6 +128,33 @@ function loadOceanModel() {
       ocean = gltf.scene;
       ocean.position.set(0, 0, 0);
       ocean.scale.set(10, 10, 10);
+      
+      // add material
+      let oceanDiffuse = textureLoader.load("textures/ocean/diffuse.png");
+      oceanDiffuse.wrapS = THREE.RepeatWrapping;
+      oceanDiffuse.wrapT = THREE.RepeatWrapping;
+      oceanDiffuse.repeat.set(1, 1);
+
+      let oceanNormal = textureLoader.load("textures/ocean/normal.png");
+      oceanNormal.wrapS = THREE.RepeatWrapping;
+      oceanNormal.wrapT = THREE.RepeatWrapping;
+      oceanNormal.repeat.set(1, 1);
+
+      let oceanMaterial = new THREE.MeshStandardMaterial({
+        normalMap: oceanNormal,
+        // transparent: true,
+        // opacity: 0.5,
+        roughnessMap: oceanDiffuse,
+        envMap: textureCube,
+        color: 0x0e016b
+      });
+
+      ocean.traverse((o) => {
+        if (o.isMesh){
+          o.material = oceanMaterial;
+        }
+      });
+      
       scene.add(ocean);
 
       mixer = new THREE.AnimationMixer(ocean);
@@ -162,8 +189,8 @@ function loadBoatModel() {
 
 function loop() {
   // animation
-  // const delta = clock.getDelta();
-  // mixer.update(delta);
+  const delta = clock.getDelta();
+  mixer.update(delta);
 
   // camera.layers.set(1);
   bloomComposer.render();

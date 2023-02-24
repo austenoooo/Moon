@@ -188,7 +188,7 @@ function loadBoatModel() {
     function (gltf) {
       boat = gltf.scene;
       boat.position.set(0, 15, 0);
-      boat.scale.set(0.3, 0.3, 0.3);
+      boat.scale.set(0.25, 0.25, 0.25);
       boat.rotation.set(0, -Math.PI / 4, 0);
       scene.add(boat);
     },

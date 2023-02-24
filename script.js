@@ -186,17 +186,15 @@ function addSpatialSound() {
   audioLoader.load("audio/bgm.m4a", function (buffer) {
     audioSource.setBuffer(buffer);
     audioSource.setDistanceModel("exponential");
-    audioSource.setRefDistance(50);
-    audioSource.setRolloffFactor(3);
+    audioSource.setRefDistance(100);
+    audioSource.setRolloffFactor(5);
     audioSource.setLoop(true);
     audioSource.play();
   });
 
   scene.add(audioSource);
   audioSource.position.set(
-    Math.round(camera.position.x),
-    Math.round(camera.position.y),
-    Math.round(camera.position.z)
+    -46, 35, 81
   );
 }
 
@@ -309,6 +307,8 @@ function loop() {
     Math.round(controls.getObject().position.y),
     Math.round(controls.getObject().position.z)
   );
+
+  console.log(controls.getObject().position);
 
   // render the scene
   // renderer.render(scene, camera);

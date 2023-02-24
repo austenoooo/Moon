@@ -35,6 +35,14 @@ const clock = new THREE.Clock();
 // postprocessing
 let bloomComposer;
 
+// audio
+let audioListener;
+let audioSource;
+
+
+
+let controls;
+
 
 // loaders
 let textureLoader = new THREE.TextureLoader();
@@ -52,8 +60,8 @@ function init() {
     0.1,
     1000
   );
-  camera.position.set(-25, 25, -50);
-  camera.lookAt(0, 50, 0);
+  camera.position.set(-25, 22, -50);
+  camera.lookAt(0, 25, 0);
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -66,9 +74,9 @@ function init() {
   const gridHelper = new THREE.GridHelper(25, 25);
   // scene.add(gridHelper);
 
-  // add orbit control
-  let controls = new OrbitControls(camera, renderer.domElement);
+  controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
+
 
   // add ambient light
   const ambientlight = new THREE.AmbientLight(0xffffff, 0.1);
@@ -78,6 +86,8 @@ function init() {
   loadCubeMap();
 
   createMoon();
+
+  addSpatialSound();
 
   createOcean();
   // loadBoatModel();
@@ -95,6 +105,32 @@ function loadCubeMap() {
 }
 
 
+function addSpatialSound(){
+  audioListener = new THREE.AudioListener();
+  audioListener.position.set(0, 20, 0);
+  scene.add(audioListener);
+  
+  const audioLoader = new THREE.AudioLoader();
+
+  audioSource = new THREE.PositionalAudio(audioListener);
+
+  audioLoader.load("audio/bgm.m4a", function (buffer){
+    audioSource.setBuffer(buffer);
+    audioSource.setDistanceModel("exponential");
+    audioSource.setRefDistance(50);
+    audioSource.setRolloffFactor(3);
+    audioSource.setLoop(true);
+    audioSource.play();
+  });
+
+  scene.add(audioSource);
+  audioSource.position.set(
+    Math.round(controls.object.position.x), 
+    Math.round(controls.object.position.y), 
+    Math.round(controls.object.position.z)
+  );
+  
+}
 
 
 // create the water surface
@@ -119,6 +155,7 @@ function createOcean(){
 
   water.rotation.x = -Math.PI / 2;
   scene.add(water);
+  water.position.set(0, 0, 25);
 }
 
 function createMoon(){
@@ -171,12 +208,17 @@ function loadBoatModel() {
   );
 }
 
+
+
 function loop() {
 
   water.material.uniforms['time'].value += 1.0 / 60.0;
 
   // camera.layers.set(1);
   bloomComposer.render();
+
+  // make the audio listener follow the orbit control
+  audioListener.position.set(Math.round(controls.object.position.x), Math.round(controls.object.position.y), Math.round(controls.object.position.z));
 
   // render the scene
   // renderer.render(scene, camera);

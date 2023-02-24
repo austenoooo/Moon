@@ -10,6 +10,8 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 
 import { Water } from "three/addons/objects/Water.js";
 
+import { PointerLockControls } from "three/addons/controls/PointerLockControls.js";
+
 // refresh page when resized
 window.onresize = function () {
   location.reload();
@@ -39,7 +41,15 @@ let bloomComposer;
 let audioListener;
 let audioSource;
 
+// controls
+let moveForward = false;
+let moveBackward = false;
+let moveLeft = false;
+let moveRight = false;
 let controls;
+let prevTime = performance.now();
+const velocity = new THREE.Vector3();
+const direction = new THREE.Vector3();
 
 // loaders
 let textureLoader = new THREE.TextureLoader();
@@ -51,27 +61,31 @@ loader.setDRACOLoader(dracoLoader);
 function init() {
   scene = new THREE.Scene();
 
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
+
   camera = new THREE.PerspectiveCamera(
     75,
     window.innerWidth / window.innerHeight,
     0.1,
     1000
   );
-  camera.position.set(-25, 22, -50);
-  camera.lookAt(0, 25, 0);
+  camera.position.set(64, 35, -65);
+  camera.lookAt(0, 30, 0);
 
-  renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  document.body.appendChild(renderer.domElement);
+  // controls = new OrbitControls(camera, renderer.domElement);
+  // controls.enableDamping = true;
+  // controls.target = new THREE.Vector3(0, 50, 0);
+  // controls.update();
 
   // helper functions
-  const axesHelper = new THREE.AxesHelper(5);
+  const axesHelper = new THREE.AxesHelper(30);
   // scene.add(axesHelper);
-  const gridHelper = new THREE.GridHelper(25, 25);
+  const gridHelper = new THREE.GridHelper(200, 200);
   // scene.add(gridHelper);
 
-  controls = new OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
+  createControl();
 
   // add ambient light
   const ambientlight = new THREE.AmbientLight(0xffffff, 0.1);
@@ -88,6 +102,67 @@ function init() {
   loadBoatModel();
 
   loop();
+}
+
+function createControl() {
+  controls = new PointerLockControls(camera, renderer.domElement);
+  scene.add(controls.getObject());
+
+  const onKeyDown = function (event) {
+    switch (event.code) {
+      case "ArrowUp":
+      case "KeyW":
+        moveForward = true;
+        break;
+
+      case "ArrowLeft":
+      case "KeyA":
+        moveLeft = true;
+        break;
+
+      case "ArrowDown":
+      case "KeyS":
+        moveBackward = true;
+        break;
+
+      case "ArrowRight":
+      case "KeyD":
+        moveRight = true;
+        break;
+    }
+  };
+
+  const onKeyUp = function (event) {
+    switch (event.code) {
+      case "ArrowUp":
+      case "KeyW":
+        moveForward = false;
+        break;
+
+      case "ArrowLeft":
+      case "KeyA":
+        moveLeft = false;
+        break;
+
+      case "ArrowDown":
+      case "KeyS":
+        moveBackward = false;
+        break;
+
+      case "ArrowRight":
+      case "KeyD":
+        moveRight = false;
+        break;
+    }
+  };
+
+  document.addEventListener("keydown", onKeyDown);
+  document.addEventListener("keyup", onKeyUp);
+
+  document.addEventListener("click", function () {
+    controls.lock();
+  });
+
 }
 
 function loadCubeMap() {
@@ -119,9 +194,9 @@ function addSpatialSound() {
 
   scene.add(audioSource);
   audioSource.position.set(
-    Math.round(controls.object.position.x),
-    Math.round(controls.object.position.y),
-    Math.round(controls.object.position.z)
+    Math.round(camera.position.x),
+    Math.round(camera.position.y),
+    Math.round(camera.position.z)
   );
 }
 
@@ -187,8 +262,8 @@ function loadBoatModel() {
     "models/boat.glb",
     function (gltf) {
       boat = gltf.scene;
-      boat.position.set(0, 15, 0);
-      boat.scale.set(0.25, 0.25, 0.25);
+      boat.position.set(0, 5, 0);
+      boat.scale.set(0.28, 0.28, 0.28);
       boat.rotation.set(0, -Math.PI / 4, 0);
       scene.add(boat);
     },
@@ -202,18 +277,44 @@ function loadBoatModel() {
 function loop() {
   water.material.uniforms["time"].value += 1.0 / 60.0;
 
-  // camera.layers.set(1);
-  bloomComposer.render();
+  const time = performance.now();
+
+  if (controls.isLocked == true) {
+
+    const delta = (time - prevTime) / 1000;
+
+    velocity.x -= velocity.x * 10.0 * delta;
+    velocity.z -= velocity.z * 10.0 * delta;
+
+    direction.z = Number(moveForward) - Number(moveBackward);
+    direction.x = Number(moveRight) - Number(moveLeft);
+    direction.normalize(); // ensures consistent movements in all directions
+
+    if (moveForward || moveBackward) {
+      velocity.z -= direction.z * 40.0 * delta;
+    }
+    if (moveLeft || moveRight) {
+      velocity.x -= direction.x * 40.0 * delta;
+    }
+
+    controls.moveRight(-velocity.x * delta);
+    controls.moveForward(-velocity.z * delta);
+  }
+
+  prevTime = time;
 
   // make the audio listener follow the orbit control
   audioListener.position.set(
-    Math.round(controls.object.position.x),
-    Math.round(controls.object.position.y),
-    Math.round(controls.object.position.z)
+    Math.round(controls.getObject().position.x),
+    Math.round(controls.getObject().position.y),
+    Math.round(controls.getObject().position.z)
   );
 
   // render the scene
   // renderer.render(scene, camera);
+
+  // camera.layers.set(1);
+  bloomComposer.render();
 
   // rinse and repeat
   window.requestAnimationFrame(loop);

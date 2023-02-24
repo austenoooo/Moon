@@ -308,7 +308,7 @@ function loop() {
     Math.round(controls.getObject().position.z)
   );
 
-  console.log(controls.getObject().position);
+  // console.log(controls.getObject().position);
 
   // render the scene
   // renderer.render(scene, camera);

@@ -8,6 +8,8 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 
+import { Water } from "three/addons/objects/Water.js";
+
 // refresh page when resized
 window.onresize = function () {
   location.reload();
@@ -16,13 +18,15 @@ window.onresize = function () {
 let scene, camera, renderer;
 
 // loaded models
-let ocean, boat;
+let ocean, boat; 
 // texture
 let textureCube;
 // material
 let moonMaterial;
 // mesh
 let moon;
+let water;
+let moonLight = new THREE.Vector3();
 
 // animation
 let mixer;
@@ -48,8 +52,8 @@ function init() {
     0.1,
     1000
   );
-  camera.position.set(-25, 0, -50);
-  camera.lookAt(0, 25, 0);
+  camera.position.set(-25, 25, -50);
+  camera.lookAt(0, 50, 0);
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -58,9 +62,9 @@ function init() {
 
   // helper functions
   const axesHelper = new THREE.AxesHelper(5);
-  scene.add(axesHelper);
+  // scene.add(axesHelper);
   const gridHelper = new THREE.GridHelper(25, 25);
-  scene.add(gridHelper);
+  // scene.add(gridHelper);
 
   // add orbit control
   let controls = new OrbitControls(camera, renderer.domElement);
@@ -75,10 +79,9 @@ function init() {
 
   createMoon();
 
-  // loadOceanModel();
-  loadBoatModel();
+  createOcean();
+  // loadBoatModel();
 
-  // TODO: think about when to put loop so that it is only ran when all models are loaded
   loop();
 }
 
@@ -89,6 +92,33 @@ function loadCubeMap() {
   cubeLoader.setPath("./textures/night_sky/");
   textureCube = cubeLoader.load(imgArray);
   scene.background = textureCube;
+}
+
+
+
+
+// create the water surface
+function createOcean(){
+  const waterGeometry = new THREE.PlaneGeometry(10000, 10000);
+
+  water = new Water(
+    waterGeometry,
+    {
+      textureWidth: 512,
+      textureHeight: 512,
+      waterNormals: textureLoader.load('textures/waternormals.jpg', function (texture){
+       texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+      }),
+      sunDirection: new THREE.Vector3(),
+      sunColor: 0xfff7b3,
+      waterColor: 0x06041f,
+      distortionScale: 3.7,
+      fog: scene.fog !== undefined // what does this line of code mean?
+    }
+  );
+
+  water.rotation.x = -Math.PI / 2;
+  scene.add(water);
 }
 
 function createMoon(){
@@ -121,56 +151,7 @@ function createMoon(){
 }
 
 
-function loadOceanModel() {
-  loader.load(
-    "models/ocean.glb",
-    function (gltf) {
-      ocean = gltf.scene;
-      ocean.position.set(0, -10, 0);
-      ocean.scale.set(20, 20, 20);
-      
-      // add material
-      let oceanDiffuse = textureLoader.load("textures/ocean/diffuse.png");
-      oceanDiffuse.wrapS = THREE.RepeatWrapping;
-      oceanDiffuse.wrapT = THREE.RepeatWrapping;
-      oceanDiffuse.repeat.set(1, 1);
 
-      let oceanNormal = textureLoader.load("textures/ocean/normal.png");
-      oceanNormal.wrapS = THREE.RepeatWrapping;
-      oceanNormal.wrapT = THREE.RepeatWrapping;
-      oceanNormal.repeat.set(1, 1);
-
-      let oceanMaterial = new THREE.MeshStandardMaterial({
-        normalMap: oceanNormal,
-        // transparent: true,
-        // opacity: 0.5,
-        map: oceanDiffuse,
-        envMap: textureCube,
-        color: 0x000563,
-        metalness: 0.9,
-        roughness: 0,
-
-      });
-
-      ocean.traverse((o) => {
-        if (o.isMesh){
-          o.material = oceanMaterial;
-        }
-      });
-      
-      scene.add(ocean);
-
-      mixer = new THREE.AnimationMixer(ocean);
-      mixer.clipAction(gltf.animations[0]).play();
-
-      // loop();
-    },
-    undefined,
-    function (e) {
-      console.error(e);
-    }
-  );
-}
 
 function loadBoatModel() {
   loader.load(
@@ -191,9 +172,8 @@ function loadBoatModel() {
 }
 
 function loop() {
-  // animation
-  // const delta = clock.getDelta();
-  // mixer.update(delta);
+
+  water.material.uniforms['time'].value += 1.0 / 60.0;
 
   // camera.layers.set(1);
   bloomComposer.render();
@@ -206,3 +186,19 @@ function loop() {
 }
 
 init();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -104,6 +104,8 @@ function init() {
   loadBoatModel();
   loadLampModel();
 
+  line();
+
   loop();
 }
 
@@ -304,7 +306,7 @@ function loadLampModel() {
       lampLight.position.set(0, -0.4, 0);
 
       // add point light
-      const light = new THREE.PointLight( 0xfff7b3, 1.3, 15);
+      const light = new THREE.PointLight( 0xfff7b3, 1.0, 15);
       lamp.add(light);
       light.position.set(0, -0.4, 0);
       light.castShadow = true;
@@ -370,6 +372,18 @@ function loop() {
 
   // rinse and repeat
   window.requestAnimationFrame(loop);
+}
+
+function line(){
+  let points = [];
+  points.push( new THREE.Vector3(-50, 0, 0 ) );
+  points.push( new THREE.Vector3( 50, 0, 0 ) );
+  const line = new MeshLine();
+  line.setVertices(points);
+  const material = new MeshLineMaterial();
+
+  const mesh = new THREE.Mesh( line, material );
+  scene.add( mesh );
 }
 
 init();

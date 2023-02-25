@@ -73,13 +73,8 @@ function init() {
     0.1,
     1000
   );
-  camera.position.set(64, 33, -65);
-  camera.lookAt(0, 25, 0);
-
-  // controls = new OrbitControls(camera, renderer.domElement);
-  // controls.enableDamping = true;
-  // controls.target = new THREE.Vector3(0, 50, 0);
-  // controls.update();
+  camera.position.set(64, 35, -65);
+  camera.lookAt(0, 15, 0);
 
   // helper functions
   const axesHelper = new THREE.AxesHelper(30);

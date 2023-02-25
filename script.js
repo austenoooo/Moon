@@ -20,7 +20,7 @@ window.onresize = function () {
 let scene, camera, renderer;
 
 // loaded models
-let ocean, boat;
+let ocean, boat, lamp;
 // texture
 let textureCube;
 // material
@@ -63,6 +63,8 @@ function init() {
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
+  // renderer.shadowMap.enabled = true;
+  // renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
   document.body.appendChild(renderer.domElement);
 
   camera = new THREE.PerspectiveCamera(
@@ -71,8 +73,8 @@ function init() {
     0.1,
     1000
   );
-  camera.position.set(64, 35, -65);
-  camera.lookAt(0, 30, 0);
+  camera.position.set(64, 33, -65);
+  camera.lookAt(0, 25, 0);
 
   // controls = new OrbitControls(camera, renderer.domElement);
   // controls.enableDamping = true;
@@ -100,6 +102,7 @@ function init() {
 
   createOcean();
   loadBoatModel();
+  loadLampModel();
 
   loop();
 }
@@ -162,7 +165,6 @@ function createControl() {
   document.addEventListener("click", function () {
     controls.lock();
   });
-
 }
 
 function loadCubeMap() {
@@ -193,9 +195,7 @@ function addSpatialSound() {
   });
 
   scene.add(audioSource);
-  audioSource.position.set(
-    -46, 35, 81
-  );
+  audioSource.position.set(-46, 35, 81);
 }
 
 // create the water surface
@@ -264,6 +264,13 @@ function loadBoatModel() {
       boat.scale.set(0.28, 0.28, 0.28);
       boat.rotation.set(0, -Math.PI / 4, 0);
       scene.add(boat);
+
+      boat.traverse(function(object){
+        if (object.isMesh) {
+          object.castShadow = true;
+          object.receiveShadow = true;
+        }
+      });
     },
     undefined,
     function (e) {
@@ -272,13 +279,58 @@ function loadBoatModel() {
   );
 }
 
+function loadLampModel() {
+  loader.load(
+    "models/lamp.glb",
+    function (gltf) {
+      lamp = gltf.scene;
+      lamp.position.set(53, 30.8, -53);
+      scene.add(lamp);
+
+      lamp.traverse(function(object){
+        if (object.isMesh) {
+          object.castShadow = true;
+          object.receiveShadow = true;
+        }
+      });
+
+      let lightMaterial = new THREE.MeshBasicMaterial({ 
+        color: 0xfff7b3,
+        transparent: true,
+        opacity: 0.8
+      });
+      let lampLight = new THREE.Mesh(new THREE.SphereGeometry(0.1, 32, 16), lightMaterial);
+      lamp.add(lampLight);
+      lampLight.position.set(0, -0.4, 0);
+
+      // add point light
+      const light = new THREE.PointLight( 0xfff7b3, 1.3, 15);
+      lamp.add(light);
+      light.position.set(0, -0.4, 0);
+      light.castShadow = true;
+      light.shadow.camera.top = 2;
+      light.shadow.camera.bottom = - 2;
+      light.shadow.camera.left = - 2;
+      light.shadow.camera.right = 2;
+      light.shadow.camera.near = 0.1;
+      light.shadow.camera.far = 40;
+
+    },
+    undefined,
+    function (e) {
+      console.error(e);
+    }
+  );
+
+  
+}
+
 function loop() {
   water.material.uniforms["time"].value += 1.0 / 60.0;
 
   const time = performance.now();
 
   if (controls.isLocked == true) {
-
     const delta = (time - prevTime) / 1000;
 
     velocity.x -= velocity.x * 10.0 * delta;
@@ -308,7 +360,7 @@ function loop() {
     Math.round(controls.getObject().position.z)
   );
 
-  // console.log(controls.getObject().position);
+  console.log(controls.getObject().position);
 
   // render the scene
   // renderer.render(scene, camera);

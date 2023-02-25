@@ -20,7 +20,8 @@ window.onresize = function () {
 let scene, camera, renderer;
 
 // loaded models
-let ocean, boat, lamp;
+let ocean, boat;
+let lamps = [];
 // texture
 let textureCube;
 // material
@@ -97,7 +98,14 @@ function init() {
 
   createOcean();
   loadBoatModel();
-  loadLampModel();
+
+
+  loadLampModel(53, 30.8, -53);
+  loadLampModel(28.5, 30.8, -57.5);
+  loadLampModel(31.5, 30.8, -31.5);
+  loadLampModel(34, 30.8, -2.5);
+  loadLampModel(5.8, 28, 29.3);
+  loadLampModel(-42, 30, 65);
 
   loop();
 }
@@ -274,12 +282,13 @@ function loadBoatModel() {
   );
 }
 
-function loadLampModel() {
+function loadLampModel(x, y, z) {
   loader.load(
     "models/lamp.glb",
     function (gltf) {
-      lamp = gltf.scene;
-      lamp.position.set(53, 30.8, -53);
+      let lamp = gltf.scene;
+      lamp.position.set(x, y, z);
+      lamps.push(lamp);
       scene.add(lamp);
 
       lamp.traverse(function(object){

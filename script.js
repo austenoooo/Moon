@@ -104,8 +104,6 @@ function init() {
   loadBoatModel();
   loadLampModel();
 
-  line();
-
   loop();
 }
 
@@ -374,16 +372,5 @@ function loop() {
   window.requestAnimationFrame(loop);
 }
 
-function line(){
-  let points = [];
-  points.push( new THREE.Vector3(-50, 0, 0 ) );
-  points.push( new THREE.Vector3( 50, 0, 0 ) );
-  const line = new MeshLine();
-  line.setVertices(points);
-  const material = new MeshLineMaterial();
-
-  const mesh = new THREE.Mesh( line, material );
-  scene.add( mesh );
-}
 
 init();

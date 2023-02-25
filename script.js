@@ -99,13 +99,15 @@ function init() {
   createOcean();
   loadBoatModel();
 
-
   loadLampModel(53, 30.8, -53);
   loadLampModel(28.5, 30.8, -57.5);
   loadLampModel(31.5, 30.8, -31.5);
   loadLampModel(34, 30.8, -2.5);
   loadLampModel(5.8, 28, 29.3);
   loadLampModel(-42, 30, 65);
+
+  loadRoseModel();
+  loadLetterModel();
 
   loop();
 }
@@ -268,12 +270,44 @@ function loadBoatModel() {
       boat.rotation.set(0, -Math.PI / 4, 0);
       scene.add(boat);
 
-      boat.traverse(function(object){
+      boat.traverse(function (object) {
         if (object.isMesh) {
           object.castShadow = true;
           object.receiveShadow = true;
         }
       });
+    },
+    undefined,
+    function (e) {
+      console.error(e);
+    }
+  );
+}
+
+function loadRoseModel() {
+  loader.load(
+    "models/rose.glb",
+    function (gltf) {
+      let rose = gltf.scene;
+      rose.position.set(54, 30, -53);
+      rose.rotation.set(0, -Math.PI / 4, Math.PI / 2);
+      scene.add(rose);
+    },
+    undefined,
+    function (e) {
+      console.error(e);
+    }
+  );
+}
+
+function loadLetterModel() {
+  loader.load(
+    "models/letter.glb",
+    function (gltf) {
+      let letter = gltf.scene;
+      letter.position.set(26, 29.8, -58);
+      letter.rotation.set(0, 0, -Math.PI / 2);
+      scene.add(letter);
     },
     undefined,
     function (e) {
@@ -291,42 +325,42 @@ function loadLampModel(x, y, z) {
       lamps.push(lamp);
       scene.add(lamp);
 
-      lamp.traverse(function(object){
+      lamp.traverse(function (object) {
         if (object.isMesh) {
           object.castShadow = true;
           object.receiveShadow = true;
         }
       });
 
-      let lightMaterial = new THREE.MeshBasicMaterial({ 
+      let lightMaterial = new THREE.MeshBasicMaterial({
         color: 0xfff7b3,
         transparent: true,
-        opacity: 0.8
+        opacity: 0.8,
       });
-      let lampLight = new THREE.Mesh(new THREE.SphereGeometry(0.1, 32, 16), lightMaterial);
+      let lampLight = new THREE.Mesh(
+        new THREE.SphereGeometry(0.1, 32, 16),
+        lightMaterial
+      );
       lamp.add(lampLight);
       lampLight.position.set(0, -0.4, 0);
 
       // add point light
-      const light = new THREE.PointLight( 0xfff7b3, 1.0, 15);
+      const light = new THREE.PointLight(0xfff7b3, 1.0, 15);
       lamp.add(light);
       light.position.set(0, -0.4, 0);
       light.castShadow = true;
       light.shadow.camera.top = 2;
-      light.shadow.camera.bottom = - 2;
-      light.shadow.camera.left = - 2;
+      light.shadow.camera.bottom = -2;
+      light.shadow.camera.left = -2;
       light.shadow.camera.right = 2;
       light.shadow.camera.near = 0.1;
       light.shadow.camera.far = 40;
-
     },
     undefined,
     function (e) {
       console.error(e);
     }
   );
-
-  
 }
 
 function loop() {
@@ -375,6 +409,5 @@ function loop() {
   // rinse and repeat
   window.requestAnimationFrame(loop);
 }
-
 
 init();

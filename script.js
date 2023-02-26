@@ -106,6 +106,8 @@ function init() {
 
   loadRoseModel();
   loadLetterModel();
+  loadMushroomModel();
+  loadTicketModel();
 
   loop();
 }
@@ -282,6 +284,51 @@ function loadBoatModel() {
           object.receiveShadow = true;
         }
       });
+    },
+    undefined,
+    function (e) {
+      console.error(e);
+    }
+  );
+}
+
+function loadMushroomModel() {
+  loader.load(
+    "models/mushrooms.glb",
+    function (gltf) {
+      let mushroom = gltf.scene;
+      mushroom.position.set(29, 30, -30);
+      mushroom.scale.set(0.01, 0.01, 0.01);
+      scene.add(mushroom);
+    },
+    undefined,
+    function (e) {
+      console.error(e);
+    }
+  );
+}
+
+function loadTicketModel(){
+  loader.load(
+    "models/ticket.glb",
+    function (gltf) {
+      let ticket = gltf.scene;
+      ticket.position.set(36, 30, -5);
+      scene.add(ticket);
+    },
+    undefined,
+    function (e) {
+      console.error(e);
+    }
+  );
+
+  loader.load(
+    "models/ticket.glb",
+    function (gltf) {
+      let ticket = gltf.scene;
+      ticket.position.set(35, 30, -4);
+      ticket.rotation.set(0, -Math.PI/6, 0);
+      scene.add(ticket);
     },
     undefined,
     function (e) {

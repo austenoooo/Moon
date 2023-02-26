@@ -29,11 +29,6 @@ let moonMaterial;
 // mesh
 let moon;
 let water;
-let moonLight = new THREE.Vector3();
-
-// animation
-let mixer;
-const clock = new THREE.Clock();
 
 // postprocessing
 let bloomComposer;
@@ -59,6 +54,9 @@ dracoLoader.setDecoderPath("jsm/libs/draco/gltf/");
 const loader = new GLTFLoader();
 loader.setDRACOLoader(dracoLoader);
 
+// ui
+const ui = document.getElementById('ui-page');
+
 function init() {
   scene = new THREE.Scene();
 
@@ -66,7 +64,7 @@ function init() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   // renderer.shadowMap.enabled = true;
   // renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
-  document.body.appendChild(renderer.domElement);
+  document.getElementById("game").appendChild(renderer.domElement);
 
   camera = new THREE.PerspectiveCamera(
     75,
@@ -103,7 +101,7 @@ function init() {
   loadLampModel(28.5, 30.8, -57.5);
   loadLampModel(31.5, 30.8, -31.5);
   loadLampModel(34, 30.8, -2.5);
-  loadLampModel(5.8, 28, 29.3);
+  loadLampModel(5, 28.5, 28.5);
   loadLampModel(-42, 30, 65);
 
   loadRoseModel();
@@ -137,6 +135,11 @@ function createControl() {
       case "KeyD":
         moveRight = true;
         break;
+
+      // case "Escape":
+      //   ui.style.opacity = 1;
+      //   ui.style.pointerEvents = "auto";
+      //   audioSource.pause();
     }
   };
 
@@ -169,6 +172,8 @@ function createControl() {
 
   document.addEventListener("click", function () {
     controls.lock();
+    ui.style.opacity = 0;
+    ui.style.pointerEvents = "none";
     audioSource.play();
   });
 }
@@ -399,7 +404,7 @@ function loop() {
     Math.round(controls.getObject().position.z)
   );
 
-  console.log(controls.getObject().position);
+  // console.log(controls.getObject().position);
 
   // render the scene
   // renderer.render(scene, camera);

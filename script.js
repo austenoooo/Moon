@@ -169,6 +169,7 @@ function createControl() {
 
   document.addEventListener("click", function () {
     controls.lock();
+    audioSource.play();
   });
 }
 
@@ -196,7 +197,7 @@ function addSpatialSound() {
     audioSource.setRefDistance(100);
     audioSource.setRolloffFactor(5);
     audioSource.setLoop(true);
-    audioSource.play();
+    // audioSource.play();
   });
 
   scene.add(audioSource);
